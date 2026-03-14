@@ -1,0 +1,62 @@
+# Секрети та конфіг (ніколи не комітити)
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Дані реєстру (великі/локальні, отримуються через /load_all)
+corrupt_all_data.json
+court_region_mapping.json
+court_region_manual.json
+punishment_list.xlsx
+ВИПРАВЛЕНО.xlsx
+
+# Логи та тимчасові файли
+*.log
+*.tmp
+*.temp
+.cache/
+
+# Звіти/артефакти (опційно)
+UNUSED_ITEMS_REPORT.md
