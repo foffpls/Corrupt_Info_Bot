@@ -30,9 +30,7 @@ try:
         cmd_revelio,
         handle_main_menu_button,
         handle_unknown_input,
-        cmd_search,
         process_full_name,
-        cmd_analyze,
         process_analyze_name,
         cmd_load_all,
         callback_load_all_confirm,
@@ -56,9 +54,7 @@ except ImportError:
         cmd_revelio,
         handle_main_menu_button,
         handle_unknown_input,
-        cmd_search,
         process_full_name,
-        cmd_analyze,
         process_analyze_name,
         cmd_load_all,
         callback_load_all_confirm,
@@ -72,11 +68,11 @@ async def main() -> None:
     dp = Dispatcher(storage=MemoryStorage())
 
     # Порядок реєстрації важливий: спочатку команди, потім кнопки меню, потім FSM, в кінці — catch-all.
+    # Пошук та аналіз лише через кнопки меню (🔍 Пошук, 🤖 Аналіз); /search та /analyze не реєструємо.
     dp.message.register(cmd_start, Command("start"))
     dp.message.register(cmd_help, Command("help"))
     dp.message.register(cmd_stop, Command("stop"))
-    dp.message.register(cmd_search, Command("search"))
-    dp.message.register(cmd_analyze, Command("analyze"))
+    dp.message.register(cmd_stop, F.text == "/stop")
     dp.message.register(cmd_load_all, Command("load_all"))
     dp.message.register(cmd_revelio, Command("revelio"))
     dp.message.register(handle_main_menu_button, F.text.in_(MAIN_MENU_BUTTONS))

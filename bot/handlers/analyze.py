@@ -32,6 +32,17 @@ async def process_analyze_name(message: Message, state: FSMContext) -> None:
     if full_name_text in MAIN_MENU_BUTTONS:
         await dispatch_main_menu(message, state, full_name_text)
         return
+    # Якщо прийшла команда як текст (без entity), перенаправити в обробник команди
+    if full_name_text in ("/search", "/analyze", "/stop"):
+        from .start_help import cmd_stop
+        if full_name_text == "/stop":
+            await cmd_stop(message, state)
+        elif full_name_text == "/search":
+            from .search import cmd_search
+            await cmd_search(message, state)
+        else:
+            await cmd_analyze(message, state)
+        return
     if not full_name_text:
         await message.answer("ПІБ не введено. Спробуй ще раз або надішли /analyze.")
         await state.clear()

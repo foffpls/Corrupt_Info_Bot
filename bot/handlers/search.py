@@ -34,6 +34,17 @@ async def process_full_name(message: Message, state: FSMContext) -> None:
     if full_name_text in MAIN_MENU_BUTTONS:
         await dispatch_main_menu(message, state, full_name_text)
         return
+    # Якщо прийшла команда як текст (без entity), перенаправити в обробник команди
+    if full_name_text in ("/search", "/analyze", "/stop"):
+        from .start_help import cmd_stop
+        if full_name_text == "/stop":
+            await cmd_stop(message, state)
+        elif full_name_text == "/analyze":
+            from .analyze import cmd_analyze
+            await cmd_analyze(message, state)
+        else:
+            await cmd_search(message, state)
+        return
     person = parse_full_name(full_name_text)
 
     if person is None:
