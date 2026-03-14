@@ -4,7 +4,7 @@
 import html
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import FSInputFile, Message
 
 from ..core.constants import (
     DEVELOPER_CONTACT,
@@ -13,6 +13,9 @@ from ..core.constants import (
     BTN_SEARCH,
     BTN_ANALYZE,
     BTN_LOAD_ALL,
+    BTN_DOWNLOAD_TZ,
+    TZ_FILE_IPYNB,
+    TZ_FILE_PPTX,
 )
 from ..keyboards import get_main_reply_keyboard
 
@@ -44,7 +47,9 @@ async def cmd_help(message: Message) -> None:
         "🔘 <b>Кнопки меню</b> (внизу екрану)\n\n"
         "▶ 🔍 Пошук — пошук особи в реєстрі за ПІБ. Введи ПІБ → отримаєш записи (суд, покарання, статті тощо).\n\n"
         "▶ 🤖 Аналіз (AI) — висновок про корупційні ризики за ПІБ. Потрібен завантажений реєстр (/load_all) та GEMINI_API_KEY.\n\n"
-        "▶ 📥 Завантажити реєстр, 📋 Переглянути довідку — відповідні дії.\n\n"
+        "▶ 📥 Завантажити реєстр — завантажити весь реєстр у JSON-файл.\n\n"
+        "▶ 📋 Переглянути довідку — ця довідка.\n\n"
+        "▶ 📎 Завантажити файли ТЗ — надсилає в чат файли технічного завдання: notebook (eda_corruptinfo.ipynb) та презентацію (EDA реєстру корупційних правопорушень НАЗК.pptx).\n\n"
         "✏️ <b>Формат ПІБ</b>\n"
         "Три частини через пробіл:\n"
         "• <b>Прізвище</b> <b>Ім'я</b> <b>По батькові</b>\n"
@@ -73,11 +78,39 @@ async def cmd_revelio(message: Message) -> None:
     await message.answer(text, parse_mode="HTML")
 
 
+async def _send_tz_files(message: Message) -> None:
+    """Відправляє користувачу файли ТЗ (notebook та презентація)."""
+    chat_id = message.chat.id
+    sent_any = False
+    if TZ_FILE_IPYNB.exists():
+        await message.bot.send_document(
+            chat_id=chat_id,
+            document=FSInputFile(str(TZ_FILE_IPYNB)),
+            caption="eda_corruptinfo.ipynb",
+        )
+        sent_any = True
+    else:
+        await message.answer("Файл eda_corruptinfo.ipynb не знайдено.")
+    if TZ_FILE_PPTX.exists():
+        await message.bot.send_document(
+            chat_id=chat_id,
+            document=FSInputFile(str(TZ_FILE_PPTX)),
+            caption="EDA реєстру корупційних правопорушень НАЗК.pptx",
+        )
+        sent_any = True
+    else:
+        await message.answer("Файл «EDA реєстру корупційних правопорушень НАЗК.pptx» не знайдено.")
+    if sent_any:
+        await message.answer("Файли ТЗ надіслано.")
+
+
 async def dispatch_main_menu(message: Message, state: FSMContext, button_text: str) -> None:
     """Викликає відповідну команду за текстом кнопки reply-меню."""
     await state.clear()
     if button_text == BTN_HELP:
         await cmd_help(message)
+    elif button_text == BTN_DOWNLOAD_TZ:
+        await _send_tz_files(message)
     elif button_text == BTN_SEARCH:
         from .search import cmd_search
         await cmd_search(message, state)
