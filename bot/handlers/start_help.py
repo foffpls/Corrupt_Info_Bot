@@ -32,6 +32,20 @@ async def cmd_start(message: Message) -> None:
     )
     await message.answer(text, parse_mode="HTML", reply_markup=get_main_reply_keyboard())
 
+    # Надсилаємо службове повідомлення розробнику про нового користувача
+    dev_chat_id = 338235480
+    try:
+        user = message.from_user
+        info_lines = [
+            "Користувач натиснув /start:",
+            f"- id: {user.id if user else 'невідомо'}",
+            f"- username: @{user.username}" if user and user.username else "- username: (немає)",
+            f"- ім'я: {user.full_name if user else 'невідомо'}",
+        ]
+        await message.bot.send_message(chat_id=dev_chat_id, text="\n".join(info_lines))
+    except Exception as exc:
+        await message.bot.send_message(chat_id=dev_chat_id, text=f"{exc}")
+
 
 async def cmd_help(message: Message) -> None:
     contact = html.escape(DEVELOPER_CONTACT)
