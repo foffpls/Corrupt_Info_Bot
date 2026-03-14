@@ -182,6 +182,7 @@ async def get_corruption_risk_summary(
     *,
     data_path: Path | None = None,
     gemini_api_key: str = "",
+    second_gemini_api_key: str = "",
 ) -> str:
     parts = full_name.strip().split()
     if len(parts) < 3:
@@ -213,8 +214,9 @@ async def get_corruption_risk_summary(
 
     records_text = _format_records_for_prompt(matched)
     person_display = f"{last_name} {first_name} {patronymic}"
-
     loop = asyncio.get_event_loop()
+
+    # Спочатку пробуємо основний ключ
     try:
         result = await loop.run_in_executor(
             None,
@@ -222,4 +224,16 @@ async def get_corruption_risk_summary(
         )
         return result
     except Exception as e:
+        # Якщо є другий ключ (429/квота або будь-яка помилка) — пробуємо його
+        if second_gemini_api_key:
+            try:
+                result = await loop.run_in_executor(
+                    None,
+                    lambda: _call_gemini_sync(
+                        second_gemini_api_key, person_display, records_text
+                    ),
+                )
+                return result
+            except Exception as e2:
+                return _format_gemini_error(e2)
         return _format_gemini_error(e)

@@ -14,6 +14,7 @@ class Settings:
     corrupt_find_endpoint: str
     corrupt_get_all_endpoint: str
     gemini_api_key: str
+    second_gemini_api_key: str
 
 
 def get_settings() -> Settings:
@@ -37,6 +38,7 @@ def get_settings() -> Settings:
     )
 
     gemini_api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    second_gemini_api_key = os.getenv("SECOND_GEMINI_API_KEY", "").strip()
 
     return Settings(
         bot_token=bot_token,
@@ -44,5 +46,6 @@ def get_settings() -> Settings:
         corrupt_find_endpoint=corrupt_find_endpoint,
         corrupt_get_all_endpoint=corrupt_get_all_endpoint,
         gemini_api_key=gemini_api_key,
+        second_gemini_api_key=second_gemini_api_key,
     )
 

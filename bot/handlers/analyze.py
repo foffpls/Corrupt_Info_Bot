@@ -61,6 +61,7 @@ async def process_analyze_name(message: Message, state: FSMContext) -> None:
         summary = await get_corruption_risk_summary(
             full_name_text,
             gemini_api_key=settings.gemini_api_key,
+            second_gemini_api_key=settings.second_gemini_api_key,
         )
     finally:
         spinner_task.cancel()
