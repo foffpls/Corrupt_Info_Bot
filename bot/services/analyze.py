@@ -8,8 +8,40 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from pathlib import Path
 from typing import Any
+
+
+def _format_gemini_error(exc: BaseException) -> str:
+    """Повертає зрозуміле українською повідомлення для помилок Gemini API."""
+    msg = str(exc).strip()
+    # 429 / квота перевищена (free tier)
+    if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower() or "exceeded" in msg.lower():
+        out = (
+            "⚠️ Перевищено ліміт запитів до сервісу аналізу (Gemini). "
+            "Безкоштовний рівень обмежує кількість запитів на день."
+        )
+        # Спроба витягнути час очікування (наприклад "Please retry in 18.49688816s" або retryDelay)
+        retry_match = re.search(r"retry in (\d+(?:\.\d+)?)\s*s", msg, re.IGNORECASE)
+        if not retry_match:
+            retry_match = re.search(r"retryDelay['\"]?\s*:\s*['\"]?(\d+)", msg)
+        if retry_match:
+            try:
+                sec = float(retry_match.group(1))
+                if sec >= 60:
+                    out += f" Спробуй ще раз через {int(sec // 60)} хв."
+                else:
+                    out += f" Спробуй ще раз через {int(round(sec))} сек."
+            except (ValueError, IndexError):
+                out += " Спробуй повторити запит через кілька хвилин."
+        else:
+            out += " Спробуй повторити запит через кілька хвилин або завтра."
+        return out
+    # Загальна помилка
+    if len(msg) > 200:
+        msg = msg[:197] + "..."
+    return f"Помилка при формуванні висновку: {msg}"
 
 # Шлях до дампу реєстру (корінь проєкту)
 DEFAULT_DATA_PATH = Path(__file__).resolve().parent.parent.parent / "corrupt_all_data.json"
@@ -190,4 +222,4 @@ async def get_corruption_risk_summary(
         )
         return result
     except Exception as e:
-        return f"Помилка при формуванні висновку: {e}"
+        return _format_gemini_error(e)
